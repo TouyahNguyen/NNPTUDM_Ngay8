@@ -1,7 +1,8 @@
 var express = require("express");
 var router = express.Router();
-let {CreateUserValidator,validationResult} = require('../utils/validatorHandler')
+let { CreateUserValidator, validationResult } = require('../utils/validatorHandler')
 let userModel = require("../schemas/users");
+let userController = require('../controllers/users')
 
 
 
@@ -30,35 +31,22 @@ router.get("/:id", async function (req, res, next) {
   }
 });
 
-router.post("/",CreateUserValidator,validationResult, async function (req, res, next) {
+router.post("/", CreateUserValidator, validationResult, async function (req, res, next) {
   try {
-      let newItem = new userModel({
-        username: req.body.username,
-        password: req.body.password,
-        email: req.body.email,
-        fullName: req.body.fullName,
-        avatarUrl: req.body.avatarUrl,
-        status: req.body.status,
-        role: req.body.role,
-        loginCount: req.body.loginCount
-      });
-
-      await newItem.save();
-
-      // populate cho đẹp
-      let saved = await userModel
-        .findById(newItem._id)
-      res.send(saved);
-    } catch (err) {
-      res.status(400).send({ message: err.message });
-    }
-  });
+    let newItem = await userController.CreateAnUser(
+      req.body.username, req.body.password, req.body.email, req.body.role
+    )
+    res.send(newItem);
+  } catch (err) {
+    res.status(400).send({ message: err.message });
+  }
+});
 
 router.put("/:id", async function (req, res, next) {
   try {
     let id = req.params.id;
-    let updatedItem = await 
-    userModel.findByIdAndUpdate(id, req.body, { new: true });
+    let updatedItem = await
+      userModel.findByIdAndUpdate(id, req.body, { new: true });
 
     if (!updatedItem) return res.status(404).send({ message: "id not found" });
 
